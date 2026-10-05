@@ -1,123 +1,1181 @@
-FRANCIS JOSEPH<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Guest QR Check-In</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#17202a}
-.wrap{max-width:650px;margin:auto;padding:18px}.card{background:white;border-radius:18px;padding:20px;box-shadow:0 4px 18px #0001}
-h1{margin:0 0 6px;font-size:25px}.muted{color:#667085;font-size:14px}
-button,input{width:100%;padding:14px;border-radius:12px;font-size:16px}
-input{border:1px solid #ccd2d9;margin:10px 0}
-button{border:0;background:#1769e0;color:white;font-weight:bold;margin:6px 0;cursor:pointer}
-button.secondary{background:#667085}.danger{background:#c62828}
-.status{text-align:center;border-radius:14px;padding:20px;margin:16px 0;background:#f1f5f9}
-.status.ok{background:#e8f7ee;color:#146c35}.status.bad{background:#fdecec;color:#a61b1b}
-#reader{width:100%;display:none;border-radius:14px;overflow:hidden;background:#111;margin:12px 0}
-video{width:100%;display:block}
-table{width:100%;border-collapse:collapse;margin-top:15px;font-size:14px}
-th,td{padding:10px 5px;border-bottom:1px solid #e5e7eb;text-align:left}
-.smallbtn{width:auto;padding:8px 12px;font-size:13px}
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  color:#17202a;
+}
+
+.wrap{
+  max-width:700px;
+  margin:auto;
+  padding:18px;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:18px;
+  box-shadow:0 4px 18px #0001;
+}
+
+h1{
+  margin:0 0 6px;
+  font-size:27px;
+}
+
+h2{
+  margin-top:0;
+}
+
+.muted{
+  color:#667085;
+  font-size:14px;
+}
+
+button,input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  font-size:16px;
+}
+
+input{
+  border:1px solid #ccd2d9;
+  margin:8px 0;
+}
+
+button{
+  border:0;
+  background:#1769e0;
+  color:white;
+  font-weight:bold;
+  margin:6px 0;
+  cursor:pointer;
+}
+
+button.secondary{
+  background:#667085;
+}
+
+button.danger{
+  background:#c62828;
+}
+
+.status{
+  text-align:center;
+  border-radius:14px;
+  padding:20px;
+  margin:16px 0;
+  background:#f1f5f9;
+}
+
+.status.ok{
+  background:#e8f7ee;
+  color:#146c35;
+}
+
+.status.bad{
+  background:#fdecec;
+  color:#a61b1b;
+}
+
+#reader{
+  width:100%;
+  display:none;
+  border-radius:14px;
+  overflow:hidden;
+  background:#111;
+  margin:12px 0;
+}
+
+video{
+  width:100%;
+  display:block;
+}
+
+#qrcode{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:18px 0;
+}
+
+.guest-box{
+  background:#f8fafc;
+  border-radius:12px;
+  padding:15px;
+  margin-top:12px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+  font-size:14px;
+}
+
+th,td{
+  padding:10px 5px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:left;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  background:#e8f7ee;
+  color:#146c35;
+  font-weight:bold;
+  font-size:12px;
+}
+
+hr{
+  border:0;
+  border-top:1px solid #e5e7eb;
+  margin:25px 0;
+}
+
+.small{
+  font-size:13px;
+}
 </style>
 </head>
+
 <body>
+
 <div class="wrap">
+
+<!-- HEADER -->
 <div class="card">
+
 <h1>🎟️ Guest QR Check-In</h1>
-<p class="muted">Scan a guest QR code. The same guest cannot be checked in twice.</p>
 
-<button id="scanBtn">📷 Scan QR Code</button>
-<div id="reader"><video id="video" playsinline></video></div>
+<p class="muted">
+Register guests, generate QR codes, scan guests and record check-ins.
+</p>
 
-<form id="form">
-<input id="guestId" placeholder="Or enter Guest ID, e.g. GUEST-001" autocomplete="off">
-<button type="submit">Check In Guest</button>
+</div>
+
+
+<!-- REGISTER GUEST -->
+<div class="card">
+
+<h2>📝 Register Guest</h2>
+
+<input
+  id="guestName"
+  placeholder="Guest full name"
+  autocomplete="off"
+>
+
+<input
+  id="guestPhone"
+  placeholder="Phone number"
+  autocomplete="off"
+>
+
+<button id="registerBtn">
+➕ Register & Generate QR
+</button>
+
+<div id="registrationStatus"></div>
+
+<div id="qrSection" style="display:none">
+
+  <div class="guest-box">
+
+    <strong>Guest ID</strong>
+
+    <div
+      id="generatedGuestId"
+      style="font-size:22px;font-weight:bold;margin-top:8px"
+    ></div>
+
+  </div>
+
+  <div id="qrcode"></div>
+
+  <p class="muted" style="text-align:center">
+    Show this QR code to the check-in staff.
+  </p>
+
+  <button
+    class="secondary"
+    id="printQrBtn"
+  >
+    🖨️ Print QR Code
+  </button>
+
+</div>
+
+</div>
+
+
+<!-- SCANNER -->
+<div class="card">
+
+<h2>📷 Staff Check-In</h2>
+
+<p class="muted">
+Scan the guest QR code or enter the Guest ID manually.
+</p>
+
+<button id="scanBtn">
+📷 Start QR Scanner
+</button>
+
+<div id="reader">
+  <video id="video" playsinline></video>
+</div>
+
+<form id="checkinForm">
+
+<input
+  id="guestId"
+  placeholder="Guest ID, e.g. GUEST-001"
+  autocomplete="off"
+>
+
+<button type="submit">
+✅ Check In Guest
+</button>
+
 </form>
 
-<div id="status" class="status">
+<div
+  id="status"
+  class="status"
+>
+
 <div style="font-size:38px">📷</div>
+
 <strong>Ready</strong>
-<p class="muted">Scan or enter a guest ID.</p>
+
+<p class="muted">
+Scan or enter a Guest ID.
+</p>
+
 </div>
 
-<h3>Checked-in guests</h3>
-<div id="count" class="muted">0 guests</div>
+</div>
+
+
+<!-- CHECKED-IN GUESTS -->
+<div class="card">
+
+<h2>👥 Checked-in Guests</h2>
+
+<div
+  id="count"
+  class="muted"
+>
+0 guests checked in
+</div>
+
 <table>
-<thead><tr><th>Guest ID</th><th>Time</th></tr></thead>
+
+<thead>
+
+<tr>
+<th>Guest ID</th>
+<th>Name</th>
+<th>Time</th>
+<th>Status</th>
+</tr>
+
+</thead>
+
 <tbody id="list"></tbody>
+
 </table>
-<button id="clearBtn" class="danger">Clear All Check-ins</button>
+
 </div>
+
+
+<!-- REGISTERED GUESTS -->
+<div class="card">
+
+<h2>📋 Registered Guests</h2>
+
+<div
+  id="registeredCount"
+  class="muted"
+>
+0 registered guests
 </div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Guest ID</th>
+<th>Name</th>
+<th>Phone</th>
+</tr>
+
+</thead>
+
+<tbody id="registeredList"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+
+<!-- QR GENERATOR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 
 <script>
-const KEY="guest_checkins_v1";
-let checked={};
-try{checked=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){checked={}}
 
-const form=document.getElementById("form");
-const input=document.getElementById("guestId");
-const status=document.getElementById("status");
-const list=document.getElementById("list");
-const count=document.getElementById("count");
-const scanBtn=document.getElementById("scanBtn");
-const reader=document.getElementById("reader");
-const video=document.getElementById("video");
-let stream=null, scanning=false;
+/* =====================================================
+   FIREBASE CONFIGURATION
+   ===================================================== */
 
-function save(){localStorage.setItem(KEY,JSON.stringify(checked))}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+const firebaseConfig = {
 
-function render(){
- const ids=Object.keys(checked);
- count.textContent=ids.length+" guest"+(ids.length===1?"":"s");
- list.innerHTML=ids.map(id=>`<tr><td><b>${esc(id)}</b></td><td>${esc(checked[id])}</td></tr>`).join("");
+  apiKey: "AIzaSyAZ77F2ztEHAWcphnKoSdAAwhNSDqaVryI",
+
+  authDomain: "guest-qr-check-in.firebaseapp.com",
+
+  databaseURL:
+    "https://guest-qr-check-in-default-rtdb.firebaseio.com",
+
+  projectId: "guest-qr-check-in",
+
+  storageBucket:
+    "guest-qr-check-in.firebasestorage.app",
+
+  messagingSenderId:
+    "180097189886",
+
+  appId:
+    "1:180097189886:web:6fb39df16a9d88cf9de2af"
+
+};
+
+
+/* START FIREBASE */
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+
+/* =====================================================
+   ELEMENTS
+   ===================================================== */
+
+const guestName =
+  document.getElementById("guestName");
+
+const guestPhone =
+  document.getElementById("guestPhone");
+
+const registerBtn =
+  document.getElementById("registerBtn");
+
+const registrationStatus =
+  document.getElementById("registrationStatus");
+
+const qrSection =
+  document.getElementById("qrSection");
+
+const generatedGuestId =
+  document.getElementById("generatedGuestId");
+
+const qrcode =
+  document.getElementById("qrcode");
+
+const printQrBtn =
+  document.getElementById("printQrBtn");
+
+const form =
+  document.getElementById("checkinForm");
+
+const input =
+  document.getElementById("guestId");
+
+const status =
+  document.getElementById("status");
+
+const list =
+  document.getElementById("list");
+
+const count =
+  document.getElementById("count");
+
+const registeredList =
+  document.getElementById("registeredList");
+
+const registeredCount =
+  document.getElementById("registeredCount");
+
+const scanBtn =
+  document.getElementById("scanBtn");
+
+const reader =
+  document.getElementById("reader");
+
+const video =
+  document.getElementById("video");
+
+
+/* =====================================================
+   GUEST ID GENERATOR
+   ===================================================== */
+
+function generateGuestId(){
+
+  return "GUEST-" +
+    Date.now().toString().slice(-6) +
+    Math.floor(Math.random() * 100);
+
 }
-function show(text,ok){
- status.className="status "+(ok?"ok":"bad");
- status.innerHTML=ok?`<div style="font-size:42px">✅</div><strong>${text}</strong>`:`<div style="font-size:42px">❌</div><strong>${text}</strong>`;
-}
-function checkIn(raw){
- const id=String(raw||"").trim().toUpperCase();
- if(!id){show("Enter or scan a Guest ID",false);return}
- if(checked[id]){show("ALREADY CHECKED IN — "+id,false);input.select();return}
- const now=new Date().toLocaleString();
- checked[id]=now; save(); render();
- show("CHECKED IN — "+id,true);
- input.value=""; input.focus();
+
+
+/* =====================================================
+   REGISTER GUEST
+   ===================================================== */
+
+registerBtn.addEventListener("click", async function(){
+
+  const name =
+    guestName.value.trim();
+
+  const phone =
+    guestPhone.value.trim();
+
+  if(!name){
+
+    alert("Please enter the guest name.");
+
+    return;
+
+  }
+
+  if(!phone){
+
+    alert("Please enter the guest phone number.");
+
+    return;
+
+  }
+
+
+  registerBtn.disabled = true;
+
+  registerBtn.textContent =
+    "Registering...";
+
+
+  try{
+
+    const guestId =
+      generateGuestId();
+
+
+    await db
+      .ref("guests/" + guestId)
+      .set({
+
+        guestId: guestId,
+
+        name: name,
+
+        phone: phone,
+
+        registeredAt:
+          firebase.database.ServerValue.TIMESTAMP,
+
+        checkedIn: false
+
+      });
+
+
+    generatedGuestId.textContent =
+      guestId;
+
+
+    qrcode.innerHTML = "";
+
+
+    new QRCode(qrcode, {
+
+      text: guestId,
+
+      width: 220,
+
+      height: 220
+
+    });
+
+
+    qrSection.style.display =
+      "block";
+
+
+    registrationStatus.innerHTML =
+
+      `<div class="status ok">
+        <strong>✅ Guest Registered Successfully</strong>
+        <p>${name}</p>
+       </div>`;
+
+
+    guestName.value = "";
+
+    guestPhone.value = "";
+
+
+  }catch(error){
+
+    console.error(error);
+
+    registrationStatus.innerHTML =
+
+      `<div class="status bad">
+        <strong>❌ Registration Failed</strong>
+        <p>${error.message}</p>
+       </div>`;
+
+  }
+
+
+  registerBtn.disabled = false;
+
+  registerBtn.textContent =
+    "➕ Register & Generate QR";
+
+});
+
+
+/* =====================================================
+   CHECK IN GUEST
+   ===================================================== */
+
+async function checkIn(raw){
+
+  const id =
+    String(raw || "")
+      .trim()
+      .toUpperCase();
+
+
+  if(!id){
+
+    showStatus(
+      "Enter or scan a Guest ID",
+      false
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const snapshot =
+      await db
+        .ref("guests/" + id)
+        .once("value");
+
+
+    if(!snapshot.exists()){
+
+      showStatus(
+        "GUEST NOT FOUND — " + id,
+        false
+      );
+
+      return;
+
+    }
+
+
+    const guest =
+      snapshot.val();
+
+
+    /* ALREADY CHECKED IN */
+
+    if(guest.checkedIn === true){
+
+      showStatus(
+        "ALREADY CHECKED IN — " + id,
+        false
+      );
+
+      input.select();
+
+      return;
+
+    }
+
+
+    /* SAVE CHECK-IN */
+
+    await db
+      .ref("guests/" + id)
+      .update({
+
+        checkedIn: true,
+
+        checkedInAt:
+          firebase.database.ServerValue.TIMESTAMP
+
+      });
+
+
+    /* ALSO SAVE A SEPARATE CHECK-IN RECORD */
+
+    await db
+      .ref("checkIns/" + id)
+      .set({
+
+        guestId: id,
+
+        name: guest.name,
+
+        phone: guest.phone,
+
+        checkedInAt:
+          firebase.database.ServerValue.TIMESTAMP
+
+      });
+
+
+    showStatus(
+      "CHECKED IN — " + guest.name,
+      true
+    );
+
+
+    input.value = "";
+
+    input.focus();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    showStatus(
+      "ERROR — " + error.message,
+      false
+    );
+
+  }
+
 }
 
-form.addEventListener("submit",e=>{e.preventDefault();checkIn(input.value)});
+
+/* =====================================================
+   CHECK-IN FORM
+   ===================================================== */
+
+form.addEventListener(
+  "submit",
+  function(e){
+
+    e.preventDefault();
+
+    checkIn(input.value);
+
+  }
+);
+
+
+/* =====================================================
+   STATUS MESSAGE
+   ===================================================== */
+
+function showStatus(text, ok){
+
+  status.className =
+    "status " + (ok ? "ok" : "bad");
+
+
+  status.innerHTML = ok
+
+    ? `<div style="font-size:42px">✅</div>
+       <strong>${text}</strong>`
+
+    : `<div style="font-size:42px">❌</div>
+       <strong>${text}</strong>`;
+
+}
+
+
+/* =====================================================
+   LIVE CHECK-IN LIST
+   ===================================================== */
+
+db.ref("checkIns")
+.on("value", function(snapshot){
+
+  const data =
+    snapshot.val() || {};
+
+  const ids =
+    Object.keys(data);
+
+
+  count.textContent =
+    ids.length +
+    " guest" +
+    (ids.length === 1 ? "" : "s") +
+    " checked in";
+
+
+  list.innerHTML = "";
+
+
+  ids.reverse().forEach(function(id){
+
+    const guest =
+      data[id];
+
+
+    let time = "-";
+
+
+    if(guest.checkedInAt){
+
+      time =
+        new Date(
+          guest.checkedInAt
+        ).toLocaleString();
+
+    }
+
+
+    const row =
+      document.createElement("tr");
+
+
+    row.innerHTML = `
+
+      <td>
+        <b>${escapeHtml(id)}</b>
+      </td>
+
+      <td>
+        ${escapeHtml(guest.name || "")}
+      </td>
+
+      <td>
+        ${escapeHtml(time)}
+      </td>
+
+      <td>
+        <span class="badge">
+          CHECKED IN
+        </span>
+      </td>
+
+    `;
+
+
+    list.appendChild(row);
+
+  });
+
+});
+
+
+/* =====================================================
+   LIVE REGISTERED GUEST LIST
+   ===================================================== */
+
+db.ref("guests")
+.on("value", function(snapshot){
+
+  const data =
+    snapshot.val() || {};
+
+  const ids =
+    Object.keys(data);
+
+
+  registeredCount.textContent =
+    ids.length +
+    " registered guest" +
+    (ids.length === 1 ? "" : "s");
+
+
+  registeredList.innerHTML = "";
+
+
+  ids.reverse().forEach(function(id){
+
+    const guest =
+      data[id];
+
+
+    const row =
+      document.createElement("tr");
+
+
+    row.innerHTML = `
+
+      <td>
+        <b>${escapeHtml(id)}</b>
+      </td>
+
+      <td>
+        ${escapeHtml(guest.name || "")}
+      </td>
+
+      <td>
+        ${escapeHtml(guest.phone || "")}
+      </td>
+
+    `;
+
+
+    registeredList.appendChild(row);
+
+  });
+
+});
+
+
+/* =====================================================
+   ESCAPE HTML
+   ===================================================== */
+
+function escapeHtml(value){
+
+  return String(value).replace(
+
+    /[&<>"']/g,
+
+    function(char){
+
+      return {
+
+        "&":"&amp;",
+
+        "<":"&lt;",
+
+        ">":"&gt;",
+
+        '"':"&quot;",
+
+        "'":"&#039;"
+
+      }[char];
+
+    }
+
+  );
+
+}
+
+
+/* =====================================================
+   QR SCANNER
+   ===================================================== */
+
+let stream = null;
+
+let scanning = false;
+
 
 async function stopCamera(){
- scanning=false;
- if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
- reader.style.display="none"; scanBtn.textContent="📷 Scan QR Code";
-}
-async function startCamera(){
- if(!("BarcodeDetector" in window)){alert("Your browser does not support direct QR scanning here. Use the Guest ID field or open this page in a supported Chrome browser.");return}
- try{
-  const detector=new BarcodeDetector({formats:["qr_code"]});
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
-  video.srcObject=stream; await video.play();
-  reader.style.display="block"; scanning=true; scanBtn.textContent="⏹ Stop Scanner";
-  async function loop(){
-   if(!scanning)return;
-   try{
-    const codes=await detector.detect(video);
-    if(codes.length && codes[0].rawValue){checkIn(codes[0].rawValue); await stopCamera(); return}
-   }catch(e){}
-   requestAnimationFrame(loop);
+
+  scanning = false;
+
+
+  if(stream){
+
+    stream
+      .getTracks()
+      .forEach(function(track){
+
+        track.stop();
+
+      });
+
+    stream = null;
+
   }
-  loop();
- }catch(e){alert("Camera could not be opened. Allow camera permission and try again.")}
+
+
+  reader.style.display =
+    "none";
+
+
+  scanBtn.textContent =
+    "📷 Start QR Scanner";
+
 }
-scanBtn.addEventListener("click",()=>scanning?stopCamera():startCamera());
-document.getElementById("clearBtn").addEventListener("click",()=>{
- if(confirm("Clear all checked-in guests?")){checked={};save();render();status.className="status";status.innerHTML="<div style='font-size:38px'>📷</div><strong>Ready</strong><p class='muted'>Scan or enter a guest ID.</p>"}
-});
-render();
+
+
+/* START CAMERA */
+
+async function startCamera(){
+
+  if(!("BarcodeDetector" in window)){
+
+    alert(
+      "Your browser does not support QR scanning. You can still enter the Guest ID manually."
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const detector =
+      new BarcodeDetector({
+        formats:["qr_code"]
+      });
+
+
+    stream =
+      await navigator
+        .mediaDevices
+        .getUserMedia({
+
+          video:{
+            facingMode:{
+              ideal:"environment"
+            }
+          },
+
+          audio:false
+
+        });
+
+
+    video.srcObject =
+      stream;
+
+
+    await video.play();
+
+
+    reader.style.display =
+      "block";
+
+
+    scanning = true;
+
+
+    scanBtn.textContent =
+      "⏹ Stop Scanner";
+
+
+    async function scanLoop(){
+
+      if(!scanning){
+
+        return;
+
+      }
+
+
+      try{
+
+        const codes =
+          await detector.detect(video);
+
+
+        if(
+          codes.length &&
+          codes[0].rawValue
+        ){
+
+          const qrValue =
+            codes[0].rawValue;
+
+
+          await stopCamera();
+
+
+          checkIn(qrValue);
+
+
+          return;
+
+        }
+
+      }catch(error){
+
+        console.log(error);
+
+      }
+
+
+      requestAnimationFrame(
+        scanLoop
+      );
+
+    }
+
+
+    scanLoop();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Camera could not be opened. Please allow camera permission and try again."
+    );
+
+  }
+
+}
+
+
+scanBtn.addEventListener(
+  "click",
+  function(){
+
+    if(scanning){
+
+      stopCamera();
+
+    }else{
+
+      startCamera();
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   PRINT QR CODE
+   ===================================================== */
+
+printQrBtn.addEventListener(
+  "click",
+  function(){
+
+    const id =
+      generatedGuestId.textContent;
+
+
+    if(!id){
+
+      return;
+
+    }
+
+
+    const qrImage =
+      qrcode.querySelector("img");
+
+
+    if(!qrImage){
+
+      alert("QR code is not ready yet.");
+
+      return;
+
+    }
+
+
+    const printWindow =
+      window.open(
+        "",
+        "_blank"
+      );
+
+
+    printWindow.document.write(`
+
+      <html>
+
+      <head>
+
+      <title>Guest QR Code</title>
+
+      <style>
+
+      body{
+        text-align:center;
+        font-family:Arial;
+        padding:40px;
+      }
+
+      img{
+        width:220px;
+        height:220px;
+      }
+
+      </style>
+
+      </head>
+
+      <body>
+
+      <h1>Guest Invitation</h1>
+
+      <p>Guest ID</p>
+
+      <h2>${id}</h2>
+
+      <img src="${qrImage.src}">
+
+      <p>Present this QR code at the entrance.</p>
+
+      </body>
+
+      </html>
+
+    `);
+
+
+    printWindow.document.close();
+
+
+    printWindow.focus();
+
+
+    setTimeout(function(){
+
+      printWindow.print();
+
+    },500);
+
+  }
+);
+
 </script>
+
 </body>
 </html>
