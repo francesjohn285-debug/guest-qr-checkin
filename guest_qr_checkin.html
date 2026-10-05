@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guest QR Check-In</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#17202a}
+.wrap{max-width:650px;margin:auto;padding:18px}.card{background:white;border-radius:18px;padding:20px;box-shadow:0 4px 18px #0001}
+h1{margin:0 0 6px;font-size:25px}.muted{color:#667085;font-size:14px}
+button,input{width:100%;padding:14px;border-radius:12px;font-size:16px}
+input{border:1px solid #ccd2d9;margin:10px 0}
+button{border:0;background:#1769e0;color:white;font-weight:bold;margin:6px 0;cursor:pointer}
+button.secondary{background:#667085}.danger{background:#c62828}
+.status{text-align:center;border-radius:14px;padding:20px;margin:16px 0;background:#f1f5f9}
+.status.ok{background:#e8f7ee;color:#146c35}.status.bad{background:#fdecec;color:#a61b1b}
+#reader{width:100%;display:none;border-radius:14px;overflow:hidden;background:#111;margin:12px 0}
+video{width:100%;display:block}
+table{width:100%;border-collapse:collapse;margin-top:15px;font-size:14px}
+th,td{padding:10px 5px;border-bottom:1px solid #e5e7eb;text-align:left}
+.smallbtn{width:auto;padding:8px 12px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<h1>🎟️ Guest QR Check-In</h1>
+<p class="muted">Scan a guest QR code. The same guest cannot be checked in twice.</p>
+
+<button id="scanBtn">📷 Scan QR Code</button>
+<div id="reader"><video id="video" playsinline></video></div>
+
+<form id="form">
+<input id="guestId" placeholder="Or enter Guest ID, e.g. GUEST-001" autocomplete="off">
+<button type="submit">Check In Guest</button>
+</form>
+
+<div id="status" class="status">
+<div style="font-size:38px">📷</div>
+<strong>Ready</strong>
+<p class="muted">Scan or enter a guest ID.</p>
+</div>
+
+<h3>Checked-in guests</h3>
+<div id="count" class="muted">0 guests</div>
+<table>
+<thead><tr><th>Guest ID</th><th>Time</th></tr></thead>
+<tbody id="list"></tbody>
+</table>
+<button id="clearBtn" class="danger">Clear All Check-ins</button>
+</div>
+</div>
+
+<script>
+const KEY="guest_checkins_v1";
+let checked={};
+try{checked=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){checked={}}
+
+const form=document.getElementById("form");
+const input=document.getElementById("guestId");
+const status=document.getElementById("status");
+const list=document.getElementById("list");
+const count=document.getElementById("count");
+const scanBtn=document.getElementById("scanBtn");
+const reader=document.getElementById("reader");
+const video=document.getElementById("video");
+let stream=null, scanning=false;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(checked))}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+function render(){
+ const ids=Object.keys(checked);
+ count.textContent=ids.length+" guest"+(ids.length===1?"":"s");
+ list.innerHTML=ids.map(id=>`<tr><td><b>${esc(id)}</b></td><td>${esc(checked[id])}</td></tr>`).join("");
+}
+function show(text,ok){
+ status.className="status "+(ok?"ok":"bad");
+ status.innerHTML=ok?`<div style="font-size:42px">✅</div><strong>${text}</strong>`:`<div style="font-size:42px">❌</div><strong>${text}</strong>`;
+}
+function checkIn(raw){
+ const id=String(raw||"").trim().toUpperCase();
+ if(!id){show("Enter or scan a Guest ID",false);return}
+ if(checked[id]){show("ALREADY CHECKED IN — "+id,false);input.select();return}
+ const now=new Date().toLocaleString();
+ checked[id]=now; save(); render();
+ show("CHECKED IN — "+id,true);
+ input.value=""; input.focus();
+}
+
+form.addEventListener("submit",e=>{e.preventDefault();checkIn(input.value)});
+
+async function stopCamera(){
+ scanning=false;
+ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+ reader.style.display="none"; scanBtn.textContent="📷 Scan QR Code";
+}
+async function startCamera(){
+ if(!("BarcodeDetector" in window)){alert("Your browser does not support direct QR scanning here. Use the Guest ID field or open this page in a supported Chrome browser.");return}
+ try{
+  const detector=new BarcodeDetector({formats:["qr_code"]});
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+  video.srcObject=stream; await video.play();
+  reader.style.display="block"; scanning=true; scanBtn.textContent="⏹ Stop Scanner";
+  async function loop(){
+   if(!scanning)return;
+   try{
+    const codes=await detector.detect(video);
+    if(codes.length && codes[0].rawValue){checkIn(codes[0].rawValue); await stopCamera(); return}
+   }catch(e){}
+   requestAnimationFrame(loop);
+  }
+  loop();
+ }catch(e){alert("Camera could not be opened. Allow camera permission and try again.")}
+}
+scanBtn.addEventListener("click",()=>scanning?stopCamera():startCamera());
+document.getElementById("clearBtn").addEventListener("click",()=>{
+ if(confirm("Clear all checked-in guests?")){checked={};save();render();status.className="status";status.innerHTML="<div style='font-size:38px'>📷</div><strong>Ready</strong><p class='muted'>Scan or enter a guest ID.</p>"}
+});
+render();
+</script>
+</body>
+</html>
